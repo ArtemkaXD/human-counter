@@ -38,6 +38,7 @@ void MainWindow::on_pushButton_clicked()
     Mat frame,firstFrame,grayFrame,dFrame;
     dX = cX = inCount = outCount = 0;
     trap = fix = false;
+    VideoWriter video;
 
     //Задаю путь к ввидео файлу
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Video File"),
@@ -47,6 +48,17 @@ void MainWindow::on_pushButton_clicked()
     VideoCapture cap(inString);
     if(!cap.isOpened())
         cerr << "Error opening video file\n";
+    else
+    {
+        int frame_width = cap.get(CAP_PROP_FRAME_WIDTH);
+        int frame_height = cap.get(CAP_PROP_FRAME_HEIGHT);
+        int ex = static_cast<int>(cap.get(CAP_PROP_FOURCC));
+        fileName.chop(4);
+        fileName.append(QString("_count.mp4"));
+        inString = fileName.toStdString();
+        video.open(inString,ex,cap.get(CAP_PROP_FPS), Size(frame_width,frame_height));
+    }
+
 
 
 
@@ -127,6 +139,7 @@ void MainWindow::on_pushButton_clicked()
         //Вывожу кадр в окно
         namedWindow("Playback", WINDOW_GUI_NORMAL|WINDOW_AUTOSIZE);
         imshow( "Playback", frame );
+        video.write(frame);
 
 
         char c=(char)waitKey(23);
@@ -135,6 +148,7 @@ void MainWindow::on_pushButton_clicked()
       }
 
     cap.release();
+    video.release();
     destroyAllWindows();
     QApplication::quit();
 
